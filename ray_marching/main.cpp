@@ -68,7 +68,7 @@ int main( void )
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     // Hide the mouse and enable unlimited mouvement
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Dark blue background
     // glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -126,6 +126,10 @@ int main( void )
 
     int timer = 0;
 
+    double mouseX = 0;
+    double mouseY = 0;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
     do{
         timer++;
 
@@ -158,7 +162,10 @@ int main( void )
         double relativeCursorX = 0.0;
         double relativeCursorY = 0.0;
         glfwGetCursorPos(window, &relativeCursorX, &relativeCursorY);
-        glUniform2f(u_mouseID, relativeCursorX, relativeCursorY);
+        mouseX += relativeCursorX - windoWidth/2;
+        mouseY -= relativeCursorY - windowHeight/2;
+        glfwSetCursorPos(window, windoWidth/2, windowHeight/2);
+        glUniform2f(u_mouseID, mouseX, mouseY);
         glUniform1f(u_timeID, (float) timer/100);
 
 

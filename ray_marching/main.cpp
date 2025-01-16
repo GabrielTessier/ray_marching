@@ -27,6 +27,14 @@ using namespace glm;
 // #include "../common/controls.hpp"
 // #include "../common/objloader.hpp"
 
+float* getCameraDir(float theta, float phi) {
+    static float dir[3];
+    dir[0] = cosf(theta)*cosf(phi);
+    dir[1] = sinf(phi);
+    dir[2] = sinf(theta)*cosf(phi);
+    return dir;
+}
+
 int main( void )
 {
 
@@ -47,7 +55,7 @@ int main( void )
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1910, 1070, "Playground", NULL, NULL);
+    window = glfwCreateWindow( 1910, 1070, "Ray marching", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
         getchar();
@@ -82,9 +90,9 @@ int main( void )
     // glEnable(GL_CULL_FACE);
 
 
-    int windoWidth, windowHeight;
-    glfwGetWindowSize(window, &windoWidth, &windowHeight);
-    glfwSetCursorPos(window, windoWidth/2, windowHeight/2);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
 
 
     GLuint VertexArrayID;
@@ -99,6 +107,10 @@ int main( void )
     GLuint u_resolutionID = glGetUniformLocation(programID, "iResolution");
     GLuint u_mouseID = glGetUniformLocation(programID, "iMouse");
     GLuint u_timeID = glGetUniformLocation(programID, "iTime");
+    GLuint u_posCameraID = glGetUniformLocation(programID, "iPosCamera");
+    GLuint u_dirCameraID = glGetUniformLocation(programID, "iDirCamera");
+    GLuint u_cameraThetaID = glGetUniformLocation(programID, "iCameraTheta");
+    GLuint u_cameraPhiID = glGetUniformLocation(programID, "iCameraPhi");
 
 
     static const GLfloat g_vertex_buffer_data[] = {
@@ -126,9 +138,12 @@ int main( void )
 
     int timer = 0;
 
-    double mouseX = 0;
-    double mouseY = 0;
-    glfwGetCursorPos(window, &mouseX, &mouseY);
+    float speed = 0.5;
+
+    float cameraPos[3] = {0., 1., -10.};
+    float cameraAnglePhi = 0.;
+    float cameraAngleTheta = 0.;
+    glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
 
     do{
         timer++;
@@ -138,37 +153,45 @@ int main( void )
 
         // Use our shader
         glUseProgram(programID);
-        // Draw triangle...
 
-        // if (timerMove) {
-        //     timer += 1;
-        // }
-        // if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
-        //     timerMove = false;
-        // }
-        // if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS){
-        //     timerMove = true;
-        // }
-        // computeMatricesFromInputs();
-        // if (resetPos && timer==30) {
-        //     resetPos = false;
-        //     initialisePositionAndAngle();
-        //     glfwSetCursorPos(window, windoWidth/2, windowHeight/2);
-        //     computeMatricesFromInputs();
-        // }
+
+        float* camDir = getCameraDir(cameraAngleTheta, cameraAnglePhi);
+        if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
+            cameraPos[0] += speed * camDir[0];
+            cameraPos[2] += speed * camDir[2];
+        }
+        if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
+            cameraPos[0] += speed * camDir[2];
+            cameraPos[2] -= speed * camDir[0];
+        }
+        if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
+            cameraPos[0] -= speed * camDir[0];
+            cameraPos[2] -= speed * camDir[2];
+        }
+        if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
+            cameraPos[0] -= speed * camDir[2];
+            cameraPos[2] += speed * camDir[0];
+        }
+        if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS){
+            cameraPos[1] += speed/2;
+        }
+        if (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS){
+            cameraPos[1] -= speed/2;
+        }
 
     
-        glUniform2f(u_resolutionID, (float) windoWidth, (float) windowHeight);
+        glUniform2f(u_resolutionID, (float) windowWidth, (float) windowHeight);
         double relativeCursorX = 0.0;
         double relativeCursorY = 0.0;
         glfwGetCursorPos(window, &relativeCursorX, &relativeCursorY);
-        mouseX += relativeCursorX - windoWidth/2;
-        mouseY -= relativeCursorY - windowHeight/2;
-        glfwSetCursorPos(window, windoWidth/2, windowHeight/2);
-        glUniform2f(u_mouseID, mouseX, mouseY);
+        cameraAngleTheta += (relativeCursorX - windowWidth/2)/500;
+        cameraAnglePhi -= (relativeCursorY - windowHeight/2)/500;
+        glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
         glUniform1f(u_timeID, (float) timer/100);
-
-
+        glUniform3f(u_posCameraID, cameraPos[0], cameraPos[1], cameraPos[2]);
+        glUniform3f(u_dirCameraID, camDir[0], camDir[1], camDir[2]);
+        glUniform1f(u_cameraPhiID, cameraAnglePhi);
+        glUniform1f(u_cameraThetaID, cameraAngleTheta);
 
 
         // 1st attribute buffer : vertices

@@ -126,34 +126,33 @@ vec3 getColor(float val) {
     if (val == 1.) return vec3(1., 0., 0.);
     if (val == 2.) return vec3(0., 1., 0.);
     if (val == 3.) return vec3(0., 0., 1.);
+    if (val == 4.) return vec3(0.2, 0.2, 1.);
     return vec3(0.);
 }
 
 vec3 render(vec2 uv, vec3 pos, vec3 dir, int nb_reflexion) {
-    vec3 col = vec3(0.);
+    vec3 col = vec3(1., 1., 1.);
 
     while (nb_reflexion > 0.) {
         vec2 ray = RayMarching(pos, dir);
         float dS = ray.x;
-        col = getColor(ray.y);
         if (dS < MAX_DIST) {
+            col *= getColor(ray.y);
             vec3 p = pos + dir*dS; // hit point
             if (ray.y == 4.) {
                 vec3 normal = getNormal(p);
                 vec3 projeter = normal*dot(normal, dir) - dir;
                 vec3 new_dir = -(dir + projeter*2.);
-                // col = render(uv, p+new_dir*DIST_CONTACT*2., new_dir, nb_reflexion-1);
                 pos = p+new_dir*DIST_CONTACT*3.;
                 dir = new_dir;
                 nb_reflexion = nb_reflexion-1;
-                //return vec3(1.);
                 continue;
             } else {
                 float light = getLight(p);
                 col *= light;
             }
         } else { // sky
-            col = vec3(53, 81, 92)/100. - uv.y/4.;
+            col *= vec3(53, 81, 92)/100. - uv.y/4.;
         }
         break;
     }

@@ -7,7 +7,7 @@
 #define MAX_STEPS 1000
 #define MAX_DIST 100.
 
-#define rot(a)      mat2( cos(a), -sin(a), sin(a), cos(a) )
+// #define rot(a)      mat2( cos(a), -sin(a), sin(a), cos(a) )
 
 uniform vec2 iResolution;
 uniform float iTime;
@@ -48,10 +48,11 @@ vec2 sdUnion(vec2 a, vec2 b) {
 }
 
 vec2 map(vec3 p) {
-    vec2 sphere = vec2(sdSphere(p, vec3(5,1,1), .25), 1.);
+    vec2 sphere = vec2(sdSphere(mod(p, 10), vec3(5,5,5), 1), 1.);
     vec2 plane = vec2(sdPlane(p, vec3(0, 0, 0), vec3(0, 1, 0)), 2.);
-    vec2 capsule = vec2(sdCapsule(mod(p, 10), vec3(5, 4.5, 5), vec3(5, 5.5, 5), 2), 3.);
-    vec2 sphereMirror1 = vec2(sdSphere(mod(p, 3), vec3(1.5,1.5,1.5), .5), 4.);
+
+    vec2 capsule = vec2(sdCapsule(p, vec3(5, 4.5, 5), vec3(5, 5.5, 5), 2), 3.);
+    vec2 sphereMirror1 = vec2(sdSphere(p, vec3(1.5,1.5,1.5), .5), 4.);
     vec2 sphereMirror2 = vec2(sdSphere(p, vec3(5,1,1), .5), 4.);
     vec2 sphereMirror3 = vec2(sdSphere(p, vec3(4,1,3), .5), 4.);
     vec2 sphereMirror4 = vec2(sdSphere(p, vec3(2,1,2), .5), 4.);
@@ -66,17 +67,17 @@ vec2 map(vec3 p) {
 
     vec2 res = sphere;
     //vec2 res = sphereMirror1;
-    res = sdUnion(res, sphere);
+    //res = sdUnion(res, sphere);
     res = sdUnion(res, plane);
     res = sdUnion(res, capsule);
-    /*res = sdUnion(res, sphereMirror1);
+    res = sdUnion(res, sphereMirror1);
     res = sdUnion(res, sphereMirror2);
     res = sdUnion(res, sphereMirror3);
     res = sdUnion(res, sphereMirror4);
     res = sdUnion(res, sphereMirror5);
     res = sdUnion(res, sphere2);
     res = sdUnion(res, sphere3);
-    res = sdUnion(res, planeMirror1);*/
+    res = sdUnion(res, planeMirror1);
     //res = sdUnion(res, planeMirror2);
     return res;
 }
@@ -94,7 +95,7 @@ vec2 RayMarching(vec3 ro, vec3 rd) {
     float dO = 0.;
     for (int i=0; i<MAX_STEPS; i++) {
         vec3 p = ro + rd*dO;
-        vec2 hit = map(p); 
+        vec2 hit = map(p);
         float dS = hit.x;
         dO += dS;
         if (dS<DIST_CONTACT || dO>MAX_DIST) {
@@ -125,7 +126,7 @@ vec3 getColor(float val) {
     if (val == 1.) return vec3(1., 0., 0.);
     if (val == 2.) return vec3(0., 1., 0.);
     if (val == 3.) return vec3(0., 0., 1.);
-    if (val == 4.) return vec3(0.);
+    if (val == 4.) return vec3(1.);
     return vec3(0.);
 }
 

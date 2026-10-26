@@ -64,12 +64,12 @@ vec2 map(vec3 p) {
     vec2 planeMirror1 = vec2(sdPlane(p, vec3(10, 1, 10), vec3(-1, 0, 0)), 1.);
     //vec2 planeMirror2 = vec2(sdPlane(p, vec3(-10, 1, 10), vec3(-1, 0, 0)), 4.);
 
-    //vec2 res = sphere;
-    vec2 res = sphereMirror1;
+    vec2 res = sphere;
+    //vec2 res = sphereMirror1;
     res = sdUnion(res, sphere);
-    /*res = sdUnion(res, plane);
+    res = sdUnion(res, plane);
     res = sdUnion(res, capsule);
-    res = sdUnion(res, sphereMirror1);
+    /*res = sdUnion(res, sphereMirror1);
     res = sdUnion(res, sphereMirror2);
     res = sdUnion(res, sphereMirror3);
     res = sdUnion(res, sphereMirror4);
